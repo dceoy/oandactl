@@ -46,7 +46,7 @@ In sandboxes where a broker holds the real credential, the runtime supplies `OAN
 ```bash
 oandactl help                      # all commands; [trading] marks state-changing ones
 oandactl order market --help       # flags of one command
-oandactl schema                    # machine-readable: every command, its flags, types, enums and defaults
+oandactl schema                    # machine-readable: commands and flags, plus globalFlags, with types, enums and defaults
 ```
 
 Prefer `oandactl schema` when you need exact flag names or allowed values.

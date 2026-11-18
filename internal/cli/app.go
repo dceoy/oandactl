@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"slices"
 	"sort"
@@ -706,7 +707,7 @@ func typeHint(t ParamType) string {
 
 // schema describes every command for agents and tooling.
 func (a *App) schema(cmds []*Command) any {
-	type flag struct {
+	type schemaFlag struct {
 		Type        ParamType `json:"type"`
 		Required    bool      `json:"required"`
 		Description string    `json:"description"`
@@ -714,21 +715,39 @@ func (a *App) schema(cmds []*Command) any {
 		Default     any       `json:"default,omitempty"`
 	}
 	type entry struct {
-		Command     string          `json:"command"`
-		Usage       string          `json:"usage"`
-		Description string          `json:"description"`
-		Mutating    bool            `json:"mutating"`
-		Stream      bool            `json:"stream"`
-		Account     bool            `json:"requiresAccount"`
-		Flags       map[string]flag `json:"flags"`
+		Command     string                `json:"command"`
+		Usage       string                `json:"usage"`
+		Description string                `json:"description"`
+		Mutating    bool                  `json:"mutating"`
+		Stream      bool                  `json:"stream"`
+		Account     bool                  `json:"requiresAccount"`
+		Flags       map[string]schemaFlag `json:"flags"`
 	}
 	out := []entry{}
 	for _, c := range cmds {
-		flags := map[string]flag{}
+		flags := map[string]schemaFlag{}
 		for _, p := range c.Params {
-			flags["--"+p.Name] = flag{Type: p.Type, Required: p.Required && p.Default == nil, Description: p.Desc, Enum: p.Enum, Default: p.Default}
+			flags["--"+p.Name] = schemaFlag{Type: p.Type, Required: p.Required && p.Default == nil, Description: p.Desc, Enum: p.Enum, Default: p.Default}
 		}
 		out = append(out, entry{Command: c.Name(), Usage: "oandactl " + c.Name() + " [--flags]", Description: c.Summary, Mutating: c.Mutating, Stream: c.Stream, Account: c.Account, Flags: flags})
 	}
-	return map[string]any{"name": "oandactl", "version": Version, "commands": out}
+	globalFlags := map[string]schemaFlag{}
+	fs := globalsForSchema()
+	fs.VisitAll(func(f *flag.Flag) {
+		types := map[reflect.Type]ParamType{
+			reflect.TypeOf(""):               TString,
+			reflect.TypeOf(false):            TBool,
+			reflect.TypeOf(time.Duration(0)): TDuration,
+		}
+		globalFlags["--"+f.Name] = schemaFlag{Type: types[reflect.TypeOf(f.Value.(flag.Getter).Get())], Description: f.Usage}
+	})
+	return map[string]any{"name": "oandactl", "version": Version, "commands": out, "globalFlags": globalFlags}
+}
+
+// globalsForSchema registers the same flags without reading operator environment values.
+func globalsForSchema() *flag.FlagSet {
+	fs := flag.NewFlagSet("schema", flag.ContinueOnError)
+	a := &App{Getenv: func(string) string { return "" }}
+	a.registerGlobals(fs, &globals{})
+	return fs
 }
