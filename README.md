@@ -4,7 +4,7 @@ A secure, dependency-free Go SDK and CLI for the [OANDA REST-V20 API](https://de
 
 - **Agent-friendly I/O.** Every command takes only named `--flags` and prints exactly the JSON that OANDA returned. Errors go to stderr as JSON, exit codes are stable, and streams print NDJSON.
 - **Agent Skill included.** [`skills/oandactl`](skills/oandactl/SKILL.md) teaches coding agents to run the CLI directly and safely, with no server or plugin to run.
-- **Self-describing.** `oandactl schema` prints every command with its flags, types, enums and defaults as JSON.
+- **Self-describing.** `oandactl schema` prints every command with its flags, types, enums and defaults, plus global flags in `globalFlags`, as JSON.
 - **Secure by default.** It defaults to the practice environment, refuses live trading unless you opt in, and has a read-only mode, dry runs bound to the confirmed request by a plan hash, and an order size limit. The token is never accepted as a flag and never logged. Only HTTPS is used, redirects are never followed, inputs are validated, and orders are never retried.
 - **Zero third-party dependencies.** It uses only the Go standard library.
 

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"flag"
 	"io"
 	"maps"
 	"net/http"
@@ -563,5 +564,59 @@ func TestPricingAccountCandles(t *testing.T) {
 	}
 	if r.URL.Query().Get("units") != "100" || r.URL.Query().Get("granularity") != "M1" {
 		t.Errorf("query = %s", r.URL.RawQuery)
+	}
+}
+
+func TestSchemaGlobalFlags(t *testing.T) {
+	h := newHarness(t, okJSON(`{}`))
+	h.env[EnvAccount] = "private-account"
+	h.env[EnvTokenFile] = "/private/token"
+	h.env[EnvEnvironment] = "live"
+	h.env[EnvAllowLive] = "true"
+	h.env[EnvPlanTTL] = "42m"
+	if code := h.run("schema"); code != ExitOK {
+		t.Fatal(code)
+	}
+	var schema struct {
+		GlobalFlags map[string]struct {
+			Type        ParamType       `json:"type"`
+			Required    bool            `json:"required"`
+			Description string          `json:"description"`
+			Default     json.RawMessage `json:"default"`
+		} `json:"globalFlags"`
+	}
+	if err := json.Unmarshal(h.stdout.Bytes(), &schema); err != nil {
+		t.Fatal(err)
+	}
+	wantTypes := map[string]ParamType{
+		"--dry-run": TBool, "--confirm-plan": TString, "--allow-live": TBool,
+		"--read-only": TBool, "--account": TString, "--env": TString,
+		"--plan-ttl": TString, "--timeout": TDuration,
+	}
+	for name, want := range wantTypes {
+		got, ok := schema.GlobalFlags[name]
+		if !ok || got.Type != want || got.Required || got.Description == "" {
+			t.Errorf("global flag %s = %+v, present %v; want type %s, optional, with description", name, got, ok, want)
+		}
+	}
+	fs := flag.NewFlagSet("test", flag.ContinueOnError)
+	(&App{Getenv: func(string) string { return "" }}).registerGlobals(fs, &globals{})
+	registered := map[string]bool{}
+	fs.VisitAll(func(f *flag.Flag) { registered["--"+f.Name] = true })
+	if len(registered) != len(schema.GlobalFlags) {
+		t.Errorf("registered %d flags, schema has %d", len(registered), len(schema.GlobalFlags))
+	}
+	for name, f := range schema.GlobalFlags {
+		if !registered[name] {
+			t.Errorf("schema contains unregistered flag %s", name)
+		}
+		if f.Default != nil {
+			t.Errorf("global flag %s unexpectedly exposes a default: %s", name, f.Default)
+		}
+	}
+	for _, secret := range []string{"private-account", "/private/token", "42m"} {
+		if strings.Contains(h.stdout.String(), secret) {
+			t.Errorf("schema contains environment value %q", secret)
+		}
 	}
 }
