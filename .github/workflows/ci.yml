@@ -23,14 +23,14 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: dceoy/gha-for-devops/.github/workflows/go-package-lint-and-scan.yml@b7d9e0c64d9cd6d7198da715b11a4648373e9a23  # v2.3.4
+    uses: dceoy/gha-for-devops/.github/workflows/go-package-lint-and-scan.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
     with:
       package-path: .
       go-version: stable
   go-test:
     permissions:
       contents: read
-    uses: dceoy/gha-for-devops/.github/workflows/go-package-test.yml@b7d9e0c64d9cd6d7198da715b11a4648373e9a23  # v2.3.4
+    uses: dceoy/gha-for-devops/.github/workflows/go-package-test.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
     with:
       working-directory: .
       go-version: stable
@@ -48,7 +48,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5  # v7.1.0
         with:
           go-version: stable
       - name: Require 100% statement coverage on macOS
@@ -74,11 +74,11 @@ jobs:
       contents: read
       security-events: write
       actions: read
-    uses: dceoy/gha-for-devops/.github/workflows/github-actions-lint-and-scan.yml@b7d9e0c64d9cd6d7198da715b11a4648373e9a23  # v2.3.4
+    uses: dceoy/gha-for-devops/.github/workflows/github-actions-lint-and-scan.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
   markdown-lint:
     permissions:
       contents: read
-    uses: dceoy/gha-for-devops/.github/workflows/markdown-lint.yml@b7d9e0c64d9cd6d7198da715b11a4648373e9a23  # v2.3.4
+    uses: dceoy/gha-for-devops/.github/workflows/markdown-lint.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
   dependabot-auto-merge:
     if: >
       github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
@@ -89,7 +89,7 @@ jobs:
       - macos-coverage
       - github-actions-lint-and-scan
       - markdown-lint
-    uses: dceoy/gha-for-devops/.github/workflows/dependabot-auto-merge.yml@b7d9e0c64d9cd6d7198da715b11a4648373e9a23  # v2.3.4
+    uses: dceoy/gha-for-devops/.github/workflows/dependabot-auto-merge.yml@a49d8c5289d9ac33c9eef275f0238dd6a8b306d5  # v2.3.5
     permissions:
       contents: write
       pull-requests: write
