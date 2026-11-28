@@ -15,7 +15,7 @@ A secure, dependency-free Go SDK and CLI for the [OANDA REST-V20 API](https://de
 [Releases](https://github.com/dceoy/oandactl/releases) provide standalone binaries for Linux and macOS (`linux`/`darwin`, `amd64`/`arm64`) plus `SHA256SUMS`. Choose a published version and your platform, download into an empty directory, and verify before installing:
 
 ```sh
-version=v0.1.0  # example: choose a published release
+version=v0.2.0  # example: choose a published release
 platform=linux_amd64
 asset="oandactl_${version}_${platform}"
 url="https://github.com/dceoy/oandactl/releases/download/${version}"
@@ -25,7 +25,7 @@ curl -fLO "${url}/SHA256SUMS" &&
 grep "  ${asset}$" SHA256SUMS > selected.sha256 &&
 sha256sum -c selected.sha256 &&
 install -m 755 "$asset" "$HOME/.local/bin/oandactl" &&
-oandactl version              # prints the release tag, e.g. v0.1.0
+oandactl version              # prints the release tag, e.g. v0.2.0
 ```
 
 Ensure `$HOME/.local/bin` exists and is on `PATH`. Checksums detect corruption; they are downloaded from the same trusted GitHub release, not an independent signature.
@@ -233,7 +233,7 @@ Options:
 
 ## Development
 
-Maintainers publish via the **Release** workflow on `main`. For the first release (no existing tags/releases), supply `tag-name: v0.1.0`; subsequent runs can leave it empty to use `version-bump`. The shared Go release workflow creates a draft release and checks out the exact release tag to build four Linux/macOS binaries with the tag embedded in `oandactl version`, then attaches `SHA256SUMS` and publishes the release only after all assets are uploaded. Failed builds or uploads leave a draft rather than an incomplete published release; rerun with the same explicit `tag-name` to restore the assets without creating a new version.
+Maintainers publish via the **Release** workflow on `main`. For the first release (no existing tags/releases), supply an explicit `tag-name`; subsequent runs can leave it empty to use `version-bump`. The shared Go release workflow creates a draft release and checks out the exact release tag to build four Linux/macOS binaries with the tag embedded in `oandactl version`, then attaches `SHA256SUMS` and publishes the release only after all assets are uploaded. Failed builds or uploads leave a draft rather than an incomplete published release; rerun with the same explicit `tag-name` to restore the assets without creating a new version.
 
 ```sh
 make check   # gofmt, go vet, golangci-lint, gosec, tests with -race, govulncheck
